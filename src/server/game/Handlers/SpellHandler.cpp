@@ -15,6 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "TransmogDisplayVendorConf.h"
 #include "WorldSession.h"
 #include "Common.h"
 #include "Config.h"
@@ -37,6 +38,12 @@
 #include "TotemPackets.h"
 #include "World.h"
 #include "WorldPacket.h"
+
+//npcbot
+#include "bot_ai.h"
+#include "botdatamgr.h"
+#include "botmgr.h"
+//end npcbot
 
 void WorldSession::HandleClientCastFlags(WorldPacket& recvPacket, uint8 castFlags, SpellCastTargets& targets)
 {
@@ -630,6 +637,109 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     if (!unit)
         return;
 
+    //npcbot
+    if (unit->GetTypeId() == TYPEID_UNIT)
+    {
+        CreatureOutfitContainer const& outfits = sObjectMgr->GetCreatureOutfitMap();
+        CreatureOutfitContainer::const_iterator it = outfits.find(unit->GetEntry());
+        if (it != outfits.end())
+        {
+            WorldPacket data(SMSG_MIRRORIMAGE_DATA, 68);
+            data << uint64(guid);
+            data << uint32(unit->GetNativeDisplayId()); // displayId
+            data << uint8(it->second.race);             // race
+            data << uint8(it->second.gender);           // gender
+            data << uint8(unit->GetClass());            // class
+            data << uint8(it->second.skin);             // skin
+            data << uint8(it->second.face);             // face
+            data << uint8(it->second.hair);             // hair
+            data << uint8(it->second.haircolor);        // haircolor
+            data << uint8(it->second.facialhair);       // facialhair
+            data << uint32(0);                          // guildId
+
+            // item displays
+            for (uint8 i = 0; i != MAX_CREATURE_OUTFIT_DISPLAYS; ++i)
+                data << uint32(it->second.outfit[i]);
+
+            SendPacket(&data);
+            return;
+        }
+
+        //npcbot minion without a record in outfits table
+        //OR
+        //npcbot's mirror image
+        Creature const* bot = unit->ToCreature();
+        if (!bot->IsNPCBot() && unit->HasAuraType(SPELL_AURA_CLONE_CASTER))
+            if (Unit const* creator = unit->GetAuraEffectsByType(SPELL_AURA_CLONE_CASTER).front()->GetCaster())
+                if (creator->GetTypeId() == TYPEID_UNIT && creator->ToCreature()->IsNPCBot())
+                    bot = creator->ToCreature();
+
+        if (bot->IsNPCBot())
+        {
+            NpcBotAppearanceData const* appearData = BotDataMgr::SelectNpcBotAppearance(unit->GetEntry());
+
+            WorldPacket data(SMSG_MIRRORIMAGE_DATA, 68);
+            data << uint64(guid);
+            data << uint32(unit->GetDisplayId());                               // displayId
+            data << uint8(unit->GetRace());                                     // race
+            data << uint8(appearData ? appearData->gender : unit->GetGender()); // gender
+            data << uint8(bot->GetBotAI()->GetPlayerClass());                   // class
+            data << uint8(appearData ? appearData->skin : 0);                   // skin
+            data << uint8(appearData ? appearData->face : 0);                   // face
+            data << uint8(appearData ? appearData->hair : 0);                   // hair
+            data << uint8(appearData ? appearData->haircolor : 0);              // haircolor
+            data << uint8(appearData ? appearData->features : 0);               // facialhair
+            data << uint32(0);                                                  // guildId
+
+            static uint8 const botItemSlots[MAX_CREATURE_OUTFIT_DISPLAYS] =
+            {
+                BOT_SLOT_HEAD,
+                BOT_SLOT_SHOULDERS,
+                BOT_SLOT_BODY,
+                BOT_SLOT_CHEST,
+                BOT_SLOT_WAIST,
+                BOT_SLOT_LEGS,
+                BOT_SLOT_FEET,
+                BOT_SLOT_WRIST,
+                BOT_SLOT_HANDS,
+                BOT_SLOT_BACK,
+                0//tabard
+            };
+
+            // Display items in visible slots
+            for (uint8 i = 0; i != MAX_CREATURE_OUTFIT_DISPLAYS; ++i)
+            {
+                uint8 slot = botItemSlots[i];
+                //Items not displayed on bot: tabard, head, back
+                if (slot == 0 ||
+                    (slot == BOT_SLOT_HEAD && BotMgr::ShowEquippedHelm() == false) ||
+                    (slot == BOT_SLOT_BACK && BotMgr::ShowEquippedCloak() == false))
+                {
+                    data << uint32(0);
+                    continue;
+                }
+
+                Item const* item = bot->GetBotEquips(slot);
+                if (item)
+                    data << uint32(item->GetTemplate()->DisplayInfoID);
+                else
+                {
+                    //don't allow to go naked
+                    if (slot == BOT_SLOT_CHEST)
+                        data << uint32(CHEST_HALISCAN);
+                    else if (slot == BOT_SLOT_LEGS)
+                        data << uint32(LEGS_HALISCAN);
+                    else
+                        data << uint32(0);
+                }
+            }
+
+            SendPacket(&data);
+            return;
+        }
+    }
+    //end npcbot
+
     if (!unit->HasAuraType(SPELL_AURA_CLONE_CASTER))
         return;
 
@@ -678,7 +788,12 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
             else if (*itr == EQUIPMENT_SLOT_BACK && player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK))
                 data << uint32(0);
             else if (Item const* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, *itr))
-                data << uint32(item->GetTemplate()->DisplayInfoID);
+            {
+                if (uint32 entry = TransmogDisplayVendorMgr::GetFakeEntry(item))
+                    data << uint32(sObjectMgr->GetItemTemplate(entry)->DisplayInfoID);
+                else
+                    data << uint32(item->GetTemplate()->DisplayInfoID);
+            }
             else
                 data << uint32(0);
         }

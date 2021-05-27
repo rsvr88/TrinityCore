@@ -81,6 +81,10 @@ enum ItemClass : uint8;
 enum LootError : uint8;
 enum LootType : uint8;
 
+// NpcBot mod
+class BotMgr;
+// end NpcBot mod
+
 typedef std::deque<Mail*> PlayerMails;
 
 #define PLAYER_MAX_SKILLS           127
@@ -150,6 +154,18 @@ struct SpellModifier
     uint32 spellId;
     Aura* const ownerAura;
 };
+
+typedef std::unordered_map<ObjectGuid, uint32> TransmogMapType;
+
+#ifdef PRESETS
+typedef std::map<uint8, uint32> PresetslotMapType;
+struct PresetData
+{
+    std::string name;
+    PresetslotMapType slotMap; // slotMap[slotId] = entry
+};
+typedef std::map<uint8, PresetData> PresetMapType;
+#endif
 
 typedef std::unordered_map<uint32, PlayerTalent*> PlayerTalentMap;
 typedef std::unordered_map<uint32, PlayerSpell> PlayerSpellMap;
@@ -2172,7 +2188,25 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         std::string GetMapAreaAndZoneString() const;
         std::string GetCoordsMapAreaAndZoneString() const;
 
+        TransmogMapType transmogMap; // transmogMap[iGUID] = entry
+#ifdef PRESETS
+        PresetMapType presetMap; // presetMap[presetId] = presetData
+#endif
+
         std::string GetDebugInfo() const override;
+
+        /*****************************************************************/
+        /***                        NPCBOT SYSTEM                      ***/
+        /*****************************************************************/
+        void SetBotMgr(BotMgr* mgr) { ASSERT (!_botMgr); _botMgr = mgr; }
+        BotMgr* GetBotMgr() const { return _botMgr; }
+        bool HaveBot() const;
+        uint8 GetNpcBotsCount() const;
+        void RemoveAllBots(uint8 removetype = 0);
+        void UpdatePhaseForBots();
+        /*****************************************************************/
+        /***                      END NPCBOT SYSTEM                    ***/
+        /*****************************************************************/
 
     protected:
         // Gamemaster whisper whitelist
@@ -2430,6 +2464,14 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         TimeTracker m_groupUpdateTimer;
 
     private:
+        /*****************************************************************/
+        /***                        NPCBOT SYSTEM                      ***/
+        /*****************************************************************/
+        BotMgr* _botMgr;
+        /*****************************************************************/
+        /***                      END NPCBOT SYSTEM                    ***/
+        /*****************************************************************/
+
         // internal common parts for CanStore/StoreItem functions
         InventoryResult CanStoreItem_InSpecificSlot(uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemTemplate const* pProto, uint32& count, bool swap, Item* pSrcItem) const;
         InventoryResult CanStoreItem_InBag(uint8 bag, ItemPosCountVec& dest, ItemTemplate const* pProto, uint32& count, bool merge, bool non_specialized, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot) const;
