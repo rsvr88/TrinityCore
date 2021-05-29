@@ -1,0 +1,20 @@
+DELETE FROM `creature_text` WHERE `CreatureID` IN(37763,37764,37765);
+INSERT INTO `creature_text` (`CreatureID`, `GroupID`, `ID`, `Text`, `Type`, `Language`, `Probability`, `Emote`, `Duration`, `Sound`, `BroadcastTextId`, `TextRange`, `comment`) VALUES 
+(37763, 0, 0, 'Look at it, Lor\'themar. It is certainly Quel\'Delar.', 12, 0, 100, 1, 0, 0, 37444, 0, 'Grand Magister Rommath to Player'),
+(37763, 1, 0, 'What is the meaning of this treachery?', 12, 0, 100, 0, 0, 0, 37389, 0, 'Grand Magister Rommath to Player'),
+(37763, 2, 0, 'It seems the captain is correct. Quel\'Delar is not to be ours after all.', 12, 0, 100, 0, 0, 0, 37433, 0, 'Grand Magister Rommath to Player'),
+(37763, 3, 0, 'Guards, return to your posts.', 12, 0, 100, 0, 0, 0, 37432, 0, 'Grand Magister Rommath to Player'),
+(37763, 4, 0, 'You will have what you have come for, $N. Take the sword and begone. And you, Auric, have a care what you say in this sacred place.', 12, 0, 100, 1, 0, 0, 37434, 0, 'Grand Magister Rommath to Player'),
+(37763, 5, 0, 'The regent speaks truly, $n. Thalorien\'s sacrifice could not prevent the fall of this very Sunwell.', 12, 0, 100, 1, 0, 0, 37451, 0, 'Grand Magister Rommat'),
+(37763, 6, 0, 'When you found the sword, it was broken and abandoned, much like Silvermoon after Kael\'thas\'s betrayal.', 12, 0, 100, 1, 0, 0, 37452, 0, 'Grand Magister Rommat'),
+(37763, 7, 0, 'Let Quel\'Delar be a sign that we will never give up, that we will face any enemy without fear.', 12, 0, 100, 1, 0, 0, 37453, 0, 'Grand Magister Rommat'),
+(37763, 8, 0, 'Reclaim the sword, $n, and bear it through that portal to Dalaran. Archmage Aethas Sunreaver will be waiting to congratulate you.', 12, 0, 100, 1, 0, 0, 37456, 0, 'Grand Magister Rommat'),
+(37764, 0, 0, 'We shall see.', 12, 0, 100, 1, 0, 0, 37442, 0, 'Lor\'themar Theron to Player'),
+(37764, 1, 0, 'So it is. You have my thanks, $N, for restoring Quel\'Delar to its rightful owners.', 12, 0, 100, 1, 0, 0, 37388, 0, 'Lor\'themar Theron to Player'),
+(37764, 2, 0, 'It is indeed Quel\'Delar. I had not thought I\'d live to see the day when Thalorien Dawnseeker\'s legendary sword would be restored to us.', 12, 0, 100, 1, 0, 0, 37449, 0, 'Lor themar Theron'),
+(37764, 3, 0, 'You are a hero and an inspiration to the sin\'dorei, $n, a symbol of our endurance in the face of tragedy and treachery.', 12, 0, 100, 1, 0, 0, 37450, 0, 'Lor themar Theron'),
+(37765, 0, 0, 'This is not my doing, Rommath. There is no treachery here.', 12, 0, 100, 1, 0, 0, 37430, 0, 'Captain Auric Sunchaser to Player'),
+(37765, 1, 0, 'Call off your men. Lor\'themar\'s own foolishness caused his injuries. Quel\'Delar is not chosen, it chooses its master.', 12, 0, 100, 1, 0, 0, 37431, 0, 'Captain Auric Sunchaser to Player'),
+(37765, 2, 0, 'Carry the sword back to Dalaran through that portal, $N. You have done what many quel\'dorei have dreamt of for years. Quel\'Delar has been restored at last.', 12, 0, 100, 25, 0, 0, 37440, 0, 'Captain Auric Sunchaser to Player'),
+(37765, 3, 0, 'Quel\'Delar is not held in high esteem by the sin\'dorei alone. It holds a place in the heart of all children of Silvermoon.', 12, 0, 100, 1, 0, 0, 37454, 0, 'Captain Auric Sunchaser'),
+(37765, 4, 0, 'This blade has been returned to us for a reason, my lords. Now is the time to rally behind the bearer of Quel\'Delar and avenge the destruction of Silvermoon and the Sunwell.', 12, 0, 100, 1, 0, 0, 37455, 0, 'Captain Auric Sunchaser');
